@@ -2,12 +2,15 @@ from django.contrib import admin
 
 
 class OrderedAdminSite(admin.AdminSite):
+    site_header = 'SAF - Účtovníctvo'
+    site_title = 'SAF'
+    index_title = 'Financie'
 
     def get_app_list(self, request):
         app_ordering = {
             'autentifikácia a autorizácia': 1,
             'financie': 2,
-            'faktúry': 3,
+            'účtovníctvo': 3,
         }
 
         model_ordering = [{
@@ -15,7 +18,9 @@ class OrderedAdminSite(admin.AdminSite):
             'oprávnenia': 2,
             'skupiny': 3,
         }, {
-            'polozka': 1,
+            'účty': 1,
+            'transakčné typy': 2,
+            'extra výdavky': 3,
         }, {
             'polozka': 1,
         }]
