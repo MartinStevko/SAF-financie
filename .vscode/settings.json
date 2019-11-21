@@ -1,0 +1,10 @@
+{
+    "python.pythonPath": ".env\\Scripts\\python.exe",
+    "editor.minimap.scale": 2,
+	"html.format.indentInnerHtml": true,
+	"python.terminal.activateEnvironment": true,
+    "python.disableInstallationCheck": true,
+    "python.linting.pycodestyleEnabled": false,
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true
+}
