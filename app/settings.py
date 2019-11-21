@@ -161,3 +161,11 @@ MESSAGE_TAGS = {
     messages.WARNING: 'warning',
     messages.ERROR: 'danger',
 }
+
+# SAF sections
+
+SECTIONS = (
+    ('vr', 'výkonná rada'),
+    ('ultimate', 'ultimate'),
+    ('discgolf', 'discgolf'),
+)
