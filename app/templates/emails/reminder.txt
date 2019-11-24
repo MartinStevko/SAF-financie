@@ -1,0 +1,6 @@
+Prostredníctvom systému na správu financií ste boli požiadaný o {{ model }} prevodu 
+transakcie {{ t }} sekcie {{ t.section }} v celkovej výške {{ t.ammount }} eur. 
+Viac informácií nájdete priamo vo finančnom systéme.
+
+S pozdravom,
+SAF bot

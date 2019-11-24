@@ -1,0 +1,6 @@
+Prostredníctvom systému na správu financií vám oznamujeme, že transakcia {{ t }} 
+sekcie {{ t.section }} v celkovej výške {{ t.ammount }} eur bola {{ model }}.
+Viac informácií nájdete priamo vo finančnom systéme.
+
+S pozdravom,
+SAF bot

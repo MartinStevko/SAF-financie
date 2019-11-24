@@ -22,7 +22,9 @@ class OrderedAdminSite(admin.AdminSite):
             'transakčné typy': 2,
             'extra výdavky': 3,
         }, {
-            'polozka': 1,
+            'transakcie': 1,
+            'schválenia': 2,
+            'položky': 3,
         }]
 
         app_dict = self._build_app_dict(request)

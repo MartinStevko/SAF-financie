@@ -36,3 +36,15 @@ EMAIL_USE_TLS = True
 CONTACT_EMAILS = [
     'email@email.com',
 ]
+
+SAF_FM = [
+    'email@email.com',
+]
+
+ULT_FM = [
+    'email@email.com',
+]
+
+DG_FM = [
+    'email@email.com',
+]
