@@ -32,7 +32,7 @@ class Transaction(models.Model):
         auto_now=True,
     )
     state = models.CharField(
-        max_length=7,
+        max_length=15,
         choices=STATES,
         verbose_name='stav',
         default='created',
