@@ -10,34 +10,41 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <title>Účtovný denník</title>
 </head>
-<h3 class="mt-4 mb-4">Účtovný denník Slovenskej asociácie Frisbee</h3>
+<h3 class="mt-4 mb-3">Účtovný denník Slovenskej asociácie Frisbee</h3>
 <body class="ml-4 mr-4">
-    <table class="table">
+    <a class="mr-2" href="admin/">Administrátor</a>
+    {% if user.is_authenticated %}
+        <a href="{% url 'finances:balance' %}">Čerpanie dotácie</a>
+    {% endif %}
+    <table class="table mt-4">
         <thead class="thead-dark">
             <tr>
                 <th scope="col">Dátum zúčtovania</th>
                 <th scope="col">Suma</th>
                 <th scope="col">Sekcia</th>
                 <th scope="col">Druh</th>
-                <th scope="col">Popis</th>
+                {% if user.is_authenticated %}
+                    <th scope="col">Popis</th>
+                    <th scope="col">Faktúra</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
             {% for t in transaction_list %}
                 <tr>
                     <td scope="row">{{ t.item.date_payed|date }}</td>
-                    <td>{% ifnotequal t.atype "income" %}-{% endifnotequal %} {{ t.ammount }} &euro;</td>
+                    <td>{{ t.ammount }} &euro;</td>
                     <td>{{ t.section }}</td>
                     <td>{{ t.approval.transaction_type }}</td>
-                    <td>{{ t.description }}</td>
+                    {% if user.is_authenticated %}
+                        <td>{{ t.description }}</td>
+                        <td><a href="{{ t.invoice.url }}">Zobraz</a></td>
+                    {% endif %}
                 </tr>
             {% empty %}
                 <tr>Zatiaľ neexistuje žiaden pohyb. Systém sa spúšťa 1.1.2020.</tr>
             {% endfor %}
         </tbody>
     </table>
-    <footer class="text-right">
-        <a class="mr-3" href="admin/">Administrátor</a>
-    </footer>
 </body>
 </html>

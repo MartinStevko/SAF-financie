@@ -12,28 +12,6 @@ STATES = (
 )
 
 
-class Account(models.Model):
-    name = models.CharField(
-        max_length=63,
-        verbose_name='meno'
-    )
-    iban = models.CharField(
-        max_length=31,
-    )
-    balance = models.DecimalField(
-        verbose_name='zostatok',
-        max_digits=8,
-        decimal_places=2,
-    )
-
-    class Meta:
-        verbose_name = 'účet'
-        verbose_name_plural = 'účty'
-
-    def __str__(self):
-        return '{}'.format(self.name)
-
-
 class TransactionType(models.Model):
     section = models.CharField(
         max_length=15,
@@ -50,7 +28,14 @@ class TransactionType(models.Model):
         verbose_name_plural = 'transakčné typy'
 
     def __str__(self):
-        return '{}'.format(self.name)
+        if self.section == 'ultimate':
+            sec = 'ULT'
+        elif self.section == 'discgolf':
+            sec = 'DG'
+        else:
+            return '{}'.format(self.name)
+
+        return '{} ({})'.format(self.name, sec)
 
 
 class ExtraExpense(models.Model):

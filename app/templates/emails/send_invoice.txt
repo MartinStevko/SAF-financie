@@ -1,0 +1,8 @@
+Ahoj,
+
+v systéme na správu financií SAF, bola vykonaná transakcia {{ t }} 
+sekcie {{ t.section }} v celkovej výške {{ t.ammount }} eur. V prílohe sa nachádza 
+faktúra k tejto transakcii. Viac informácií nájdeš priamo vo finančnom systéme.
+
+S pozdravom,
+SAF bot

@@ -1,7 +1,11 @@
 from django.db import models
 from django.conf import settings
+from django.core.validators import RegexValidator
 
-from finances.models import Account, TransactionType
+import os
+from django.core.exceptions import ValidationError
+
+from finances.models import TransactionType
 from app.emails import SendMail
 
 SECTIONS = settings.SECTIONS
@@ -17,7 +21,15 @@ STATES = (
     ('disapproved', 'neschválené'),
     ('payed', 'zaplatené a neverejné'),
     ('public', 'zaplatené a verejné'),
+    ('old', 'staré'),
 )
+
+
+def validate_file_extension(value):
+    ext = os.path.splitext(value.name)[1]
+    valid_extensions = ['.pdf']
+    if not ext.lower() in valid_extensions:
+        raise ValidationError('Súbor musí byť vo formáte PDF.')
 
 
 class Transaction(models.Model):
@@ -42,11 +54,6 @@ class Transaction(models.Model):
         max_digits=8,
         decimal_places=2,
     )
-    atype = models.CharField(
-        max_length=7,
-        choices=TYPES,
-        verbose_name='typ',
-    )
     section = models.CharField(
         max_length=15,
         choices=SECTIONS,
@@ -55,9 +62,23 @@ class Transaction(models.Model):
     description = models.TextField(
         verbose_name='popis',
     )
+    provider = models.CharField(
+        max_length=255,
+        verbose_name='Názov poskytovateľa',
+    )
+    business_id = models.CharField(
+        max_length=15,
+        verbose_name='IČO/Business ID',
+        validators=[RegexValidator(regex='[0-9]{8,}')],
+    )
+    invoice_number = models.CharField(
+        max_length=63,
+        verbose_name='číslo faktúry',
+    )
     invoice = models.FileField(
         verbose_name='faktúra',
         upload_to='invoices/%Y/%m/',
+        validators=[validate_file_extension],
     )
 
     class Meta:
@@ -185,13 +206,6 @@ class Item(models.Model):
         blank=True,
         null=True,
     )
-    account = models.ForeignKey(
-        Account,
-        on_delete=models.PROTECT,
-        verbose_name='účet',
-        null=True,
-        blank=True,
-    )
 
     class Meta:
         verbose_name = 'položka'
@@ -210,4 +224,15 @@ class Item(models.Model):
         ).send_reminder(
             'vykonanie',
             self.transaction
+        )
+
+    def send_invoice(self):
+        recipient = 'ACCOUNTANT'
+
+        SendMail(
+            recipient,
+            'Doklad k prevodu v roku '+str(self.date_payed.year)
+        ).send_invoice(
+            {'t': self.transaction},
+            self.transaction.invoice.path,
         )

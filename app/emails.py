@@ -34,6 +34,12 @@ class SendMail:
                 'DG_FM',
                 ['safslovakia@gmail.com']
             )
+        elif recipients == 'ACCOUNTANT':
+            self.recipients = getattr(
+                settings,
+                'ACCOUNTANT',
+                ['safslovakia@gmail.com']
+            )
         else:
             raise SuspiciousOperation('Príjmateľ správy sa nezhoduje!')
 
@@ -62,6 +68,19 @@ class SendMail:
         }
 
         self.send_rendered_email(context, plaintext)
+
+    def send_invoice(self, context, attachement):
+        template = get_template('emails/send_invoice.txt')
+        content = template.render(context)
+
+        email = EmailMessage(
+            self.subject,
+            content,
+            getattr(settings, 'FROM_EMAIL_NAME', 'info@szf.sk'),
+            self.recipients,
+        )
+        email.attach_file(attachement) 
+        email.send(fail_silently=False)
 
     def send_rendered_email(self, context, template):
         content = template.render(context)

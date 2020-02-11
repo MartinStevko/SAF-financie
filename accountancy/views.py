@@ -11,5 +11,5 @@ class DiaryView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['transaction_list'] = Transaction.objects.filter(state='public')
+        context['transaction_list'] = Transaction.objects.filter(state='public').order_by('-item__date_payed')
         return context

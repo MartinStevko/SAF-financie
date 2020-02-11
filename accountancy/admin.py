@@ -1,16 +1,26 @@
 from django.contrib import admin
-from django_reverse_admin import ReverseModelAdmin
+from django.conf import settings
 
-from finances.models import Account, TransactionType
+from django_reverse_admin import ReverseModelAdmin
+import djqscsv
+
+from finances.models import TransactionType
 from .models import *
 
 
-class TransactionAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'section', 'ammount', 'atype', 'description')
-    list_per_page = 100
-    list_filter = ['section', 'atype', 'state']
+class ExportCsvMixin:
+    def export_as_csv(self, request, queryset):
+        return djqscsv.render_to_csv_response(queryset)
 
-    search_fields = ['ammount', 'description']
+    export_as_csv.short_description = 'Exportuj ako CSV'
+
+
+class TransactionAdmin(admin.ModelAdmin, ExportCsvMixin):
+    list_display = ('pk', 'section', 'ammount', 'description')
+    list_per_page = 100
+    list_filter = ['section', 'state']
+
+    search_fields = ['pk', 'ammount', 'description']
     ordering = ('-date_created',)
 
     date_hierarchy = 'date_created'
@@ -18,7 +28,7 @@ class TransactionAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Transakcia', {
             'classes': ('wide',),
-            'fields': (('ammount', 'atype'),),
+            'fields': ('ammount',),
         }),
         ('Zaradenie', {
             'classes': ('wide',),
@@ -26,13 +36,18 @@ class TransactionAdmin(admin.ModelAdmin):
         }),
         ('Faktúra', {
             'classes': ('wide',),
-            'fields': ('invoice',),
+            'fields': (
+                ('provider', 'business_id'),
+                'invoice_number',
+                'invoice',
+            ),
         }),
     )
 
     actions = [
         'send_reminder',
         'request_approval',
+        'export_as_csv',
     ]
 
     def save_model(self, request, obj, form, change):
@@ -68,22 +83,20 @@ class TransactionAdmin(admin.ModelAdmin):
     request_approval.short_description = 'Požiadať o schválenie'
 
 
-class ApprovalAdmin(ReverseModelAdmin):
+class ApprovalAdmin(ReverseModelAdmin, ExportCsvMixin):
     list_display = (
         'get_id',
         'get_section',
         'transaction_type',
         'get_ammount',
-        'get_atype',
     )
     list_per_page = 100
     list_filter = [
         'transaction__section',
-        'transaction__atype',
         'transaction__state',
     ]
 
-    search_fields = ['transaction__ammount', 'transaction__description']
+    search_fields = ['transaction__pk', 'transaction__ammount', 'transaction__description']
     ordering = ('-transaction__date_created',)
 
     autocomplete_fields = ['transaction_type']
@@ -98,8 +111,10 @@ class ApprovalAdmin(ReverseModelAdmin):
     inline_type = 'stacked'
     inline_reverse = [('transaction', {'fields': [
         ('created_by', 'section'),
-        ('ammount', 'atype'),
+        'ammount',
         'description',
+        ('provider', 'business_id'),
+        'invoice_number',
         'invoice',
     ]}),]
 
@@ -107,6 +122,7 @@ class ApprovalAdmin(ReverseModelAdmin):
         'send_reminder',
         'approve',
         'disapprove',
+        'export_as_csv',
     ]
 
     def save_model(self, request, obj, form, change):
@@ -121,6 +137,18 @@ class ApprovalAdmin(ReverseModelAdmin):
             request.META['QUERY_STRING'] = request.GET.urlencode()
 
         return super(ApprovalAdmin, self).changelist_view(request, extra_context=extra_context)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'transaction_type':
+            print(request.user.email == '')
+            if request.user.email in settings.ULT_FM:
+                print(TransactionType.objects.filter(section='ultimate'))
+                kwargs['queryset'] = TransactionType.objects.filter(section='ultimate')
+            elif request.user.email in settings.DG_FM:
+                kwargs['queryset'] = TransactionType.objects.filter(section='discgolf')
+            else:
+                kwargs['queryset'] = TransactionType.objects.all()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def get_id(self, obj):
         return str(obj.transaction)
@@ -145,17 +173,6 @@ class ApprovalAdmin(ReverseModelAdmin):
     get_ammount.admin_order_field = 'transaction__ammount'
     get_ammount.short_description = 'Suma'
 
-    def get_atype(self, obj):
-        if obj.transaction:
-            if obj.transaction.atype == 'income':
-                return 'príjem'
-            else:
-                return 'výdaj'
-        else:
-            return str(None)
-
-    get_atype.short_description = 'Typ'
-
     def send_reminder(self, request, queryset):
         for q in queryset:
             q.item.send_reminder()
@@ -177,24 +194,22 @@ class ApprovalAdmin(ReverseModelAdmin):
     disapprove.short_description = 'Zamietnuť transakciu'
 
 
-class ItemAdmin(ReverseModelAdmin):
+class ItemAdmin(ReverseModelAdmin, ExportCsvMixin):
     list_display = (
         'get_id',
         'get_section',
         'get_transaction_type',
         'get_ammount',
-        'get_atype',
     )
     list_per_page = 100
     list_filter = [
-        'account',
         'transaction__section',
-        'transaction__atype',
         'transaction__state',
         'approval__transaction_type',
     ]
 
     search_fields = [
+        'transaction__pk',
         'transaction__ammount',
         'transaction__description',
     ]
@@ -205,7 +220,7 @@ class ItemAdmin(ReverseModelAdmin):
     fieldsets = (
         ('Platba', {
             'classes': ('wide',),
-            'fields': ('account', 'date_payed'),
+            'fields': ('date_payed',),
         }),
     )
 
@@ -214,8 +229,10 @@ class ItemAdmin(ReverseModelAdmin):
         ('created_by', 'transaction_type',),
     ]}), ('transaction', {'fields': [
         ('created_by', 'section'),
-        ('ammount', 'atype'),
+        'ammount',
         'description',
+        ('provider', 'business_id'),
+        'invoice_number',
         'invoice',
     ]}),]
 
@@ -224,6 +241,7 @@ class ItemAdmin(ReverseModelAdmin):
         'make_privat',
         'pay',
         'disapprove',
+        'export_as_csv',
     ]
 
     def save_model(self, request, obj, form, change):
@@ -261,14 +279,6 @@ class ItemAdmin(ReverseModelAdmin):
     get_ammount.admin_order_field = 'transaction__ammount'
     get_ammount.short_description = 'Suma'
 
-    def get_atype(self, obj):
-        if obj.approval.transaction.atype == 'income':
-            return 'príjem'
-        else:
-            return 'výdaj'
-
-    get_atype.short_description = 'Typ'
-
     def make_privat(self, request, queryset):
         for q in queryset:
             q.transaction.state = 'payed'
@@ -294,6 +304,7 @@ class ItemAdmin(ReverseModelAdmin):
         for q in queryset:
             t = q.transaction
             t.pay()
+            q.send_invoice()
 
     pay.short_description = 'Zaplatiť transakciu'
 

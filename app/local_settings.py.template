@@ -48,3 +48,7 @@ ULT_FM = [
 DG_FM = [
     'email@email.com',
 ]
+
+ACCOUNTANT = [
+    'email@email.com',
+]

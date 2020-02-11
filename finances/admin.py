@@ -3,21 +3,6 @@ from django.contrib import admin
 from .models import *
 
 
-class AccountAdmin(admin.ModelAdmin):
-    list_display = ('name', 'balance', 'iban')
-    list_per_page = 50
-
-    search_fields = ['name', 'iban']
-    ordering = ('-pk',)
-
-    fieldsets = (
-        ('Účet', {
-            'classes': ('wide',),
-            'fields': (('name', 'iban'), 'balance'),
-        }),
-    )
-
-
 class TransactionTypeAdmin(admin.ModelAdmin):
     list_display = ('name', 'section')
     list_per_page = 100
@@ -54,6 +39,5 @@ class ExtraExpenseAdmin(admin.ModelAdmin):
     )
 
 
-admin.site.register(Account, AccountAdmin)
 admin.site.register(TransactionType, TransactionTypeAdmin)
 admin.site.register(ExtraExpense, ExtraExpenseAdmin)
