@@ -91,7 +91,7 @@ DATABASES = {
 
 LOGIN_URL = 'admin:login'
 
-LOGOUT_REDIRECT_URL = 'finances:diary'
+LOGOUT_REDIRECT_URL = 'accountancy:diary'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
