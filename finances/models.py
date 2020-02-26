@@ -22,6 +22,13 @@ class TransactionType(models.Model):
         max_length=63,
         verbose_name='meno'
     )
+    ammount = models.DecimalField(
+        verbose_name='suma',
+        max_digits=8,
+        decimal_places=2,
+        blank=True,
+        null=True,
+    )
 
     class Meta:
         verbose_name = 'transakčný typ'
