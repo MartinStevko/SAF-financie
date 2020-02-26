@@ -14,7 +14,7 @@ class TransactionTypeAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Transakčný typ', {
             'classes': ('wide',),
-            'fields': ('name', 'section'),
+            'fields': ('name', 'section', 'ammount'),
         }),
     )
 
