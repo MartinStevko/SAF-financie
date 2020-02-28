@@ -27,7 +27,7 @@ class BalanceView(ListView):
                 extras = ExtraExpense.objects.filter(transaction_type=t)
                 for a in extras:
                     if a.state in ['payed', 'borrowed']:
-                        s += a.transaction.ammount
+                        s += a.ammount
                 temp.append((t.name, s, c))
             context['data'].append((section[1], temp))
         return context
