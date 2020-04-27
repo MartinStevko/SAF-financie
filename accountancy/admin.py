@@ -1,8 +1,10 @@
 from django.contrib import admin
 from django.conf import settings
+from django.http import HttpResponse
 
 from django_reverse_admin import ReverseModelAdmin
 import djqscsv
+import csv
 
 from finances.models import TransactionType
 from .models import *
@@ -242,6 +244,7 @@ class ItemAdmin(ReverseModelAdmin, ExportCsvMixin):
         'pay',
         'disapprove',
         'export_as_csv',
+        'export_full_csv',
     ]
 
     def save_model(self, request, obj, form, change):
@@ -307,6 +310,24 @@ class ItemAdmin(ReverseModelAdmin, ExportCsvMixin):
             q.send_invoice()
 
     pay.short_description = 'Zaplatiť transakciu'
+    
+    def export_full_csv(self, request, queryset):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="invoicing.csv"'
+        writer = csv.writer(response)
+        
+        writer.writerow(["EXČ", "Dátum", "Popis", "IČO", "Dodávateľ", "Suma"])
+        for q in queryset:
+            writer.writerow([
+                q.transaction.invoice_number,
+                q.date_payed,
+                q.transaction.description,
+                q.transaction.business_id,
+                q.transaction.provider,
+                q.transaction.ammount
+            ])
+            
+        return response
 
 
 admin.site.register(Transaction, TransactionAdmin)
