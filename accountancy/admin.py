@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.conf import settings
 from django.http import HttpResponse
 
@@ -183,8 +183,11 @@ class ApprovalAdmin(ReverseModelAdmin, ExportCsvMixin):
 
     def approve(self, request, queryset):
         for q in queryset:
-            t = q.transaction
-            t.approve()
+            if q.transaction_type:
+                t = q.transaction
+                t.approve()
+            else:
+                messages.error(request, "Transakcia {} nebola schválená, pretože nie je zaradená".format(q.transaction.id))
 
     approve.short_description = 'Schváliť a požiadať o prevod'
 
@@ -242,6 +245,7 @@ class ItemAdmin(ReverseModelAdmin, ExportCsvMixin):
         'make_public',
         'make_privat',
         'pay',
+        'return_to_approval',
         'disapprove',
         'export_as_csv',
         'export_full_csv',
@@ -302,6 +306,12 @@ class ItemAdmin(ReverseModelAdmin, ExportCsvMixin):
             t.disapprove('finančným manažérom SAF')
 
     disapprove.short_description = 'Zamietnuť transakciu'
+    
+    def return_to_approval(self, request, queryset):
+        for q in queryset:
+            q.disapprove()
+
+    return_to_approval.short_description = 'Vrátiť na schválenie'
 
     def pay(self, request, queryset):
         for q in queryset:
@@ -328,6 +338,8 @@ class ItemAdmin(ReverseModelAdmin, ExportCsvMixin):
             ])
             
         return response
+    
+    export_full_csv.short_description = 'Exportuj celé CSV'
 
 
 admin.site.register(Transaction, TransactionAdmin)
