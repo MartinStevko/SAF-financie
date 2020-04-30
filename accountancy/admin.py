@@ -30,7 +30,7 @@ class TransactionAdmin(admin.ModelAdmin, ExportCsvMixin):
     fieldsets = (
         ('Transakcia', {
             'classes': ('wide',),
-            'fields': ('ammount',),
+            'fields': ('ammount', 'iban',),
         }),
         ('Zaradenie', {
             'classes': ('wide',),
@@ -114,6 +114,7 @@ class ApprovalAdmin(ReverseModelAdmin, ExportCsvMixin):
     inline_reverse = [('transaction', {'fields': [
         ('created_by', 'section'),
         'ammount',
+        'iban',
         'description',
         ('provider', 'business_id'),
         'invoice_number',
@@ -235,6 +236,7 @@ class ItemAdmin(ReverseModelAdmin, ExportCsvMixin):
     ]}), ('transaction', {'fields': [
         ('created_by', 'section'),
         'ammount',
+        'iban',
         'description',
         ('provider', 'business_id'),
         'invoice_number',
