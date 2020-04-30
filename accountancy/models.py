@@ -62,6 +62,9 @@ class Transaction(models.Model):
     description = models.TextField(
         verbose_name='popis',
     )
+    iban = models.CharField(
+        max_length=31,
+    )
     provider = models.CharField(
         max_length=255,
         verbose_name='Názov poskytovateľa',
