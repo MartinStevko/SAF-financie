@@ -216,6 +216,13 @@ class Item(models.Model):
             str(self.date_payed),
             self.approval.transaction.ammount
         )
+    
+    def disapprove(self):
+        self.transaction.state = 'created'
+        self.transaction.save()
+
+        self.approval.send_reminder()
+        self.delete()
 
     def send_reminder(self):
         SendMail(
